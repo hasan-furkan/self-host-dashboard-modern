@@ -77,6 +77,14 @@
     </script>
 </head>
 <body class="bg-dark-bg text-gray-100 min-h-screen">
+    <!-- Include auth script first -->
+    <script src="auth.js"></script>
+    <script>
+        // Check authentication before page loads
+        if (!auth.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+    </script>
     <!-- Background gradient -->
     <div class="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-dark-bg to-blue-900/20 pointer-events-none"></div>
     
@@ -102,6 +110,28 @@
                     </button>
                     <button id="settingsBtn" class="p-2 hover:bg-dark-hover rounded-lg transition-colors">
                         <i class="fas fa-cog"></i>
+                    </button>
+                    <div class="relative">
+                        <button id="userBtn" class="p-2 hover:bg-dark-hover rounded-lg transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="username" class="text-sm"></span>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-64 bg-dark-surface rounded-lg shadow-lg border border-gray-700">
+                            <div class="px-4 py-3 border-b border-gray-700">
+                                <p class="text-xs text-gray-400">Session expires in</p>
+                                <p id="sessionTimer" class="text-sm font-medium text-yellow-400">30:00</p>
+                            </div>
+                            <button id="changePasswordBtn" class="w-full text-left px-4 py-2 hover:bg-dark-hover transition-colors">
+                                <i class="fas fa-key mr-2"></i>Change Password
+                            </button>
+                            <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-dark-hover transition-colors rounded-b-lg text-red-400">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                    <button id="logoutBtnMain" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors flex items-center space-x-2 text-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
                     </button>
                 </div>
             </div>
@@ -254,6 +284,76 @@
                 </button>
                 <button id="confirmDelete" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors">
                     Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-lg p-6 max-w-md w-full border border-gray-800 animate-fade-in">
+            <h2 class="text-xl font-bold mb-4">Change Password</h2>
+            <form id="passwordForm" class="space-y-4">
+                <div>
+                    <label for="currentPassword" class="block text-sm font-medium mb-2">Current Password</label>
+                    <div class="relative">
+                        <input type="password" id="currentPassword" required
+                            class="w-full bg-dark-surface px-4 py-2 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none transition-colors">
+                        <button type="button" class="togglePasswordBtn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300" data-target="currentPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label for="newPassword" class="block text-sm font-medium mb-2">New Password</label>
+                    <div class="relative">
+                        <input type="password" id="newPassword" required
+                            class="w-full bg-dark-surface px-4 py-2 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none transition-colors">
+                        <button type="button" class="togglePasswordBtn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300" data-target="newPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">At least 8 characters with uppercase, lowercase, and numbers</p>
+                </div>
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium mb-2">Confirm New Password</label>
+                    <div class="relative">
+                        <input type="password" id="confirmPassword" required
+                            class="w-full bg-dark-surface px-4 py-2 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none transition-colors">
+                        <button type="button" class="togglePasswordBtn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300" data-target="confirmPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="passwordError" class="hidden text-red-500 text-sm p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="passwordErrorText"></span>
+                </div>
+                <div id="passwordSuccess" class="hidden text-green-500 text-sm p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>Password changed successfully!</span>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancelPassword" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Default Password Warning -->
+    <div id="defaultPasswordWarning" class="hidden fixed top-20 right-4 z-50 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 max-w-sm animate-fade-in">
+        <div class="flex items-start space-x-3">
+            <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+            <div>
+                <p class="text-sm text-yellow-400 font-medium">Security Warning</p>
+                <p class="text-xs text-gray-300 mt-1">You're using the default password. Please change it for security.</p>
+                <button id="changePasswordNow" class="mt-2 text-xs text-yellow-400 hover:text-yellow-300 underline">
+                    Change password now
                 </button>
             </div>
         </div>

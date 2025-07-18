@@ -1,4 +1,56 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
+    if (!auth.checkSession()) {
+        return; // Will redirect to login
+    }
+    
+    // Show username
+    const usernameElement = document.getElementById('username');
+    if (usernameElement) {
+        usernameElement.textContent = auth.getCurrentUser() || 'User';
+    }
+    
+    // Check for default password warning
+    const authData = JSON.parse(localStorage.getItem('dashboardAuth') || '{}');
+    if (authData.isDefaultPassword) {
+        const warning = document.getElementById('defaultPasswordWarning');
+        if (warning) {
+            warning.classList.remove('hidden');
+        }
+    }
+    
+    // Session timer functionality
+    let sessionTimerInterval;
+    function updateSessionTimer() {
+        const auth = JSON.parse(localStorage.getItem('dashboardAuth') || '{}');
+        if (!auth.expires) return;
+        
+        const remainingTime = auth.expires - Date.now();
+        if (remainingTime <= 0) {
+            auth.logout();
+            return;
+        }
+        
+        const minutes = Math.floor(remainingTime / 60000);
+        const seconds = Math.floor((remainingTime % 60000) / 1000);
+        const timerElement = document.getElementById('sessionTimer');
+        if (timerElement) {
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color based on time remaining
+            if (minutes < 5) {
+                timerElement.className = 'text-sm font-medium text-red-400';
+            } else if (minutes < 10) {
+                timerElement.className = 'text-sm font-medium text-yellow-400';
+            } else {
+                timerElement.className = 'text-sm font-medium text-green-400';
+            }
+        }
+    }
+    
+    // Start session timer
+    updateSessionTimer();
+    sessionTimerInterval = setInterval(updateSessionTimer, 1000);
     const servicesGrid = document.getElementById('servicesGrid');
     const searchBar = document.getElementById('searchBar');
     const searchBtn = document.getElementById('searchBtn');
@@ -442,6 +494,134 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // User menu functionality
+    const userBtn = document.getElementById('userBtn');
+    const userMenu = document.getElementById('userMenu');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const passwordModal = document.getElementById('passwordModal');
+    const passwordForm = document.getElementById('passwordForm');
+    const cancelPassword = document.getElementById('cancelPassword');
+    const changePasswordNow = document.getElementById('changePasswordNow');
+    const logoutBtnMain = document.getElementById('logoutBtnMain');
+    
+    // Toggle user menu
+    userBtn.addEventListener('click', () => {
+        userMenu.classList.toggle('hidden');
+    });
+    
+    // Close user menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!userBtn.contains(e.target) && !userMenu.contains(e.target)) {
+            userMenu.classList.add('hidden');
+        }
+    });
+    
+    // Change password button
+    changePasswordBtn.addEventListener('click', () => {
+        userMenu.classList.add('hidden');
+        passwordModal.classList.remove('hidden');
+    });
+    
+    // Change password now button (from warning)
+    if (changePasswordNow) {
+        changePasswordNow.addEventListener('click', () => {
+            passwordModal.classList.remove('hidden');
+        });
+    }
+    
+    // Logout buttons (both menu and main)
+    logoutBtn.addEventListener('click', () => {
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+        auth.logout();
+    });
+    
+    logoutBtnMain.addEventListener('click', () => {
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+        auth.logout();
+    });
+    
+    // Cancel password change
+    cancelPassword.addEventListener('click', () => {
+        passwordModal.classList.add('hidden');
+        passwordForm.reset();
+        document.getElementById('passwordError').classList.add('hidden');
+        document.getElementById('passwordSuccess').classList.add('hidden');
+    });
+    
+    // Handle password form submission
+    passwordForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        const errorDiv = document.getElementById('passwordError');
+        const errorText = document.getElementById('passwordErrorText');
+        const successDiv = document.getElementById('passwordSuccess');
+        
+        // Hide previous messages
+        errorDiv.classList.add('hidden');
+        successDiv.classList.add('hidden');
+        
+        // Validate passwords match
+        if (newPassword !== confirmPassword) {
+            errorText.textContent = 'New passwords do not match';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        
+        // Try to change password
+        const result = auth.changePassword(currentPassword, newPassword);
+        
+        if (result.success) {
+            successDiv.classList.remove('hidden');
+            passwordForm.reset();
+            
+            // Hide default password warning if it exists
+            const warning = document.getElementById('defaultPasswordWarning');
+            if (warning) {
+                warning.classList.add('hidden');
+            }
+            
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                passwordModal.classList.add('hidden');
+                successDiv.classList.add('hidden');
+            }, 2000);
+        } else {
+            errorText.textContent = result.message;
+            errorDiv.classList.remove('hidden');
+        }
+    });
+    
+    // Password visibility toggles
+    document.querySelectorAll('.togglePasswordBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = btn.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // Close password modal on outside click
+    passwordModal.addEventListener('click', (e) => {
+        if (e.target === passwordModal) {
+            passwordModal.classList.add('hidden');
+        }
+    });
+    
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + K for search
@@ -456,6 +636,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape') {
         if (!settingsModal.classList.contains('hidden')) {
             settingsModal.classList.add('hidden');
+        } else if (!passwordModal.classList.contains('hidden')) {
+            passwordModal.classList.add('hidden');
         } else if (!searchBar.classList.contains('hidden')) {
             searchBar.classList.add('hidden');
             searchInput.value = '';
