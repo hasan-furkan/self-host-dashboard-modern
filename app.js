@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const defaultServices = [
         {
             "name": "Nextcloud",
-            "icon": "fab fa-nextcloud",
+            "icon": "fa-solid fa-cloud",
             "link": "https://nextcloud.example.com",
             "color": "from-blue-500 to-blue-600",
             "description": "File hosting & collaboration"
@@ -84,69 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
             "color": "from-cyan-500 to-cyan-600",
             "description": "Container management"
         },
-        {
-            "name": "Kavita",
-            "icon": "fas fa-book-reader",
-            "link": "https://kavita.example.com",
-            "color": "from-purple-500 to-purple-600",
-            "description": "Book & manga reader"
-        },
-        {
-            "name": "Jellyfin",
-            "icon": "fas fa-tv",
-            "link": "https://jellyfin.example.com",
-            "color": "from-pink-500 to-pink-600",
-            "description": "Media streaming server"
-        },
-        {
-            "name": "Home Assistant",
-            "icon": "fas fa-home",
-            "link": "https://homeassistant.example.com",
-            "color": "from-orange-500 to-orange-600",
-            "description": "Home automation"
-        },
-        {
-            "name": "Pi-hole",
-            "icon": "fas fa-shield-alt",
-            "link": "https://pihole.example.com",
-            "color": "from-red-500 to-red-600",
-            "description": "Network-wide ad blocking"
-        },
-        {
-            "name": "Vaultwarden",
-            "icon": "fas fa-lock",
-            "link": "https://vaultwarden.example.com",
-            "color": "from-indigo-500 to-indigo-600",
-            "description": "Password manager"
-        },
-        {
-            "name": "Syncthing",
-            "icon": "fas fa-sync",
-            "link": "https://syncthing.example.com",
-            "color": "from-teal-500 to-teal-600",
-            "description": "File synchronization"
-        },
-        {
-            "name": "Grafana",
-            "icon": "fas fa-chart-line",
-            "link": "https://grafana.example.com",
-            "color": "from-yellow-500 to-yellow-600",
-            "description": "Analytics & monitoring"
-        },
-        {
-            "name": "Paperless-ngx",
-            "icon": "fas fa-file-alt",
-            "link": "https://paperless.example.com",
-            "color": "from-emerald-500 to-emerald-600",
-            "description": "Document management"
-        },
-        {
-            "name": "PhotoPrism",
-            "icon": "fas fa-camera",
-            "link": "https://photoprism.example.com",
-            "color": "from-rose-500 to-rose-600",
-            "description": "Photo management"
-        }
     ];
 
     // Load services from localStorage or use default
